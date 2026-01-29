@@ -1,119 +1,161 @@
-# Python-i
 import tkinter as tk
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, simpledialog
 import hashlib
 import socket
-import os
 import platform
+import time
 from cryptography.fernet import Fernet
 
-# ================== MAIN WINDOW ==================
-app = tk.Tk()
-app.title("⚡ ETHICAL HACKER TOOL ⚡")
-app.geometry("700x550")
-app.configure(bg="black")
+# =========================
+# LOGIN WINDOW
+# =========================
+def start_login():
+    login = tk.Tk()
+    login.title("SECURE LOGIN")
+    login.geometry("320x220")
+    login.configure(bg="black")
 
-# ================== TITLE ==================
-title = tk.Label(
-    app,
-    text="ETHICAL HACKER CONTROL PANEL",
-    fg="lime",
-    bg="black",
-    font=("Consolas", 18, "bold")
-)
-title.pack(pady=10)
+    tk.Label(login, text="ETHICAL HACKER LOGIN",
+             fg="lime", bg="black",
+             font=("Consolas", 14, "bold")).pack(pady=15)
 
-output = tk.Text(app, height=12, bg="black", fg="lime", font=("Consolas", 10))
-output.pack(pady=10)
+    user = tk.Entry(login, bg="black", fg="lime",
+                    insertbackground="lime", justify="center")
+    user.insert(0, "admin")
+    user.pack(pady=5)
 
-# ================== FUNCTIONS ==================
+    pwd = tk.Entry(login, bg="black", fg="lime",
+                   insertbackground="lime", show="*", justify="center")
+    pwd.pack(pady=5)
 
-def password_check():
-    pwd = filedialog.askstring("Password", "Enter Password")
-    if not pwd:
-        return
-    strength = "WEAK"
-    if len(pwd) >= 8 and any(c.isdigit() for c in pwd) and any(c.isupper() for c in pwd):
-        strength = "STRONG"
-    output.insert(tk.END, f"[+] Password Strength: {strength}\n")
+    def check_login():
+        if user.get() == "admin" and pwd.get() == "admin123":
+            login.destroy()
+            main_app()
+        else:
+            messagebox.showerror("ACCESS DENIED", "Wrong Username or Password")
 
-def generate_hash():
-    text = filedialog.askstring("Hash", "Enter Text")
-    if not text:
-        return
-    hashed = hashlib.sha256(text.encode()).hexdigest()
-    output.insert(tk.END, f"[+] SHA256 Hash:\n{hashed}\n")
+    tk.Button(login, text="ACCESS SYSTEM",
+              command=check_login,
+              bg="black", fg="lime",
+              width=18).pack(pady=15)
 
-def port_scan():
-    output.insert(tk.END, "[*] Scanning localhost ports...\n")
-    for port in range(75, 85):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(0.2)
-        result = s.connect_ex(("127.0.0.1", port))
-        if result == 0:
-            output.insert(tk.END, f"[OPEN] Port {port}\n")
-        s.close()
-    output.insert(tk.END, "[✓] Scan Complete\n")
+    login.mainloop()
 
-def system_info():
-    info = f"""
-OS: {platform.system()}
-Version: {platform.version()}
-Machine: {platform.machine()}
-Processor: {platform.processor()}
-"""
-    output.insert(tk.END, info + "\n")
+# =========================
+# MAIN APPLICATION
+# =========================
+def main_app():
+    app = tk.Tk()
+    app.title("⚡ ETHICAL HACKER CONTROL PANEL ⚡")
+    app.geometry("900x600")
+    app.configure(bg="black")
 
-# Encryption demo
-key = Fernet.generate_key()
-cipher = Fernet(key)
+    tk.Label(app, text="ETHICAL HACKER TERMINAL",
+             fg="lime", bg="black",
+             font=("Consolas", 20, "bold")).pack(pady=10)
 
-def encrypt_file():
-    file = filedialog.askopenfilename()
-    if not file:
-        return
-    with open(file, "rb") as f:
-        data = f.read()
-    encrypted = cipher.encrypt(data)
-    with open(file + ".enc", "wb") as f:
-        f.write(encrypted)
-    output.insert(tk.END, "[✓] File Encrypted\n")
+    output = tk.Text(app, bg="black", fg="lime",
+                     font=("Consolas", 10))
+    output.pack(fill="both", expand=True, padx=10, pady=10)
 
-def decrypt_file():
-    file = filedialog.askopenfilename()
-    if not file:
-        return
-    with open(file, "rb") as f:
-        data = f.read()
-    decrypted = cipher.decrypt(data)
-    new_file = file.replace(".enc", "")
-    with open(new_file, "wb") as f:
-        f.write(decrypted)
-    output.insert(tk.END, "[✓] File Decrypted\n")
+    def log(text):
+        output.insert(tk.END, text + "\n")
+        output.see(tk.END)
 
-# ================== BUTTONS ==================
-btn_frame = tk.Frame(app, bg="black")
-btn_frame.pack()
+    # ================= FUNCTIONS =================
 
-def hacker_button(text, cmd):
-    return tk.Button(
-        btn_frame,
-        text=text,
-        command=cmd,
-        bg="black",
-        fg="lime",
-        font=("Consolas", 10, "bold"),
-        width=25,
-        relief="groove",
-        border=2
-    )
+    def password_strength():
+        pwd = simpledialog.askstring("Password Check", "Enter Password")
+        if not pwd:
+            return
+        score = 0
+        if len(pwd) >= 8: score += 1
+        if any(c.isupper() for c in pwd): score += 1
+        if any(c.isdigit() for c in pwd): score += 1
+        if any(c in "!@#$%^&*" for c in pwd): score += 1
 
-hacker_button("🔐 Password Strength Check", password_check).grid(row=0, column=0, padx=5, pady=5)
-hacker_button("🧬 Generate SHA256 Hash", generate_hash).grid(row=0, column=1, padx=5, pady=5)
-hacker_button("🌐 Localhost Port Scan", port_scan).grid(row=1, column=0, padx=5, pady=5)
-hacker_button("💻 System Information", system_info).grid(row=1, column=1, padx=5, pady=5)
-hacker_button("📁 Encrypt File", encrypt_file).grid(row=2, column=0, padx=5, pady=5)
-hacker_button("📂 Decrypt File", decrypt_file).grid(row=2, column=1, padx=5, pady=5)
+        strength = ["VERY WEAK", "WEAK", "MEDIUM", "STRONG", "VERY STRONG"][score]
+        log(f"[+] Password Strength: {strength}")
 
-# ================== RUN ==================
-app.mainloop()
+    def generate_hash():
+        text = simpledialog.askstring("Hash Generator", "Enter Text")
+        if not text:
+            return
+        log("[SHA256] " + hashlib.sha256(text.encode()).hexdigest())
+        log("[MD5]    " + hashlib.md5(text.encode()).hexdigest())
+
+    def port_scan():
+        log("[*] Starting Localhost Port Scan...")
+        for port in range(70, 100):
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.15)
+            if s.connect_ex(("127.0.0.1", port)) == 0:
+                log(f"[OPEN] Port {port}")
+            s.close()
+        log("[✓] Port Scan Finished")
+
+    def system_info():
+        log("---- SYSTEM INFO ----")
+        log("OS        : " + platform.system())
+        log("Version   : " + platform.version())
+        log("Machine   : " + platform.machine())
+        log("Processor : " + platform.processor())
+
+    key = Fernet.generate_key()
+    cipher = Fernet(key)
+
+    def encrypt_file():
+        file = filedialog.askopenfilename()
+        if not file:
+            return
+        data = open(file, "rb").read()
+        open(file + ".enc", "wb").write(cipher.encrypt(data))
+        log("[✓] File Encrypted Successfully")
+
+    def decrypt_file():
+        file = filedialog.askopenfilename()
+        if not file:
+            return
+        data = open(file, "rb").read()
+        open(file.replace(".enc", ""), "wb").write(cipher.decrypt(data))
+        log("[✓] File Decrypted Successfully")
+
+    def attack_simulation():
+        log("[*] Training Attack Simulation Started")
+        for i in range(1, 6):
+            log(f"Injecting Payload {i}/5 ...")
+            app.update()
+            time.sleep(0.4)
+        log("[✓] Simulation Completed (Training Mode Only)")
+
+    def clear_logs():
+        output.delete("1.0", tk.END)
+
+    # ================= BUTTON PANEL =================
+    panel = tk.Frame(app, bg="black")
+    panel.pack(pady=10)
+
+    def btn(text, cmd, r, c):
+        tk.Button(panel, text=text, command=cmd,
+                  bg="black", fg="lime",
+                  width=28, height=2,
+                  font=("Consolas", 10, "bold"),
+                  relief="groove", border=2)\
+            .grid(row=r, column=c, padx=5, pady=5)
+
+    btn("🔐 Password Strength Checker", password_strength, 0, 0)
+    btn("🧬 Hash Generator", generate_hash, 0, 1)
+    btn("🌐 Localhost Port Scanner", port_scan, 1, 0)
+    btn("💻 System Information", system_info, 1, 1)
+    btn("📁 Encrypt File", encrypt_file, 2, 0)
+    btn("📂 Decrypt File", decrypt_file, 2, 1)
+    btn("⚠️ Attack Simulation (Demo)", attack_simulation, 3, 0)
+    btn("🧹 Clear Terminal", clear_logs, 3, 1)
+
+    app.mainloop()
+
+# =========================
+# START PROGRAM
+# =========================
+start_login()
