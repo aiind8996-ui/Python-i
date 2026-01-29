@@ -1,108 +1,80 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
-import hashlib
-import platform
-import time
-
-# ================= LOGIN =================
-def login_screen():
-    login = tk.Tk()
-    login.title("Login")
-    login.geometry("300x200")
-    login.configure(bg="black")
-
-    tk.Label(login, text="HACKER LOGIN",
-             fg="lime", bg="black",
-             font=("Consolas", 14, "bold")).pack(pady=10)
-
-    user = tk.Entry(login, bg="black", fg="lime", insertbackground="lime")
-    user.pack(pady=5)
-
-    pwd = tk.Entry(login, bg="black", fg="lime",
-                   insertbackground="lime", show="*")
-    pwd.pack(pady=5)
-
-    def check():
-        if user.get() == "admin" and pwd.get() == "1234":
-            login.destroy()
-            main_app()
-        else:
-            messagebox.showerror("Error", "Wrong Login")
-
-    tk.Button(login, text="LOGIN", command=check,
-              bg="black", fg="lime", width=15).pack(pady=10)
-
-    login.mainloop()
+from tkinter import filedialog, simpledialog
+import webbrowser
+import os
 
 # ================= MAIN APP =================
-def main_app():
-    app = tk.Tk()
-    app.title("Ethical Hacker App")
-    app.geometry("700x500")
-    app.configure(bg="black")
+app = tk.Tk()
+app.title("Mini YouTube")
+app.geometry("800x500")
+app.configure(bg="white")
 
-    tk.Label(app, text="ETHICAL HACKER TERMINAL",
-             fg="lime", bg="black",
-             font=("Consolas", 18, "bold")).pack(pady=10)
+# ================= HEADER =================
+header = tk.Frame(app, bg="red", height=50)
+header.pack(fill="x")
 
-    output = tk.Text(app, bg="black", fg="lime",
-                     font=("Consolas", 10), height=15)
-    output.pack(padx=10, pady=10)
+tk.Label(
+    header,
+    text="Mini YouTube",
+    bg="red",
+    fg="white",
+    font=("Arial", 16, "bold")
+).pack(side="left", padx=10)
 
-    def log(msg):
-        output.insert(tk.END, msg + "\n")
-        output.see(tk.END)
+# ================= SEARCH =================
+def search_video():
+    q = search_entry.get()
+    if q.strip() == "":
+        return
+    url = f"https://www.youtube.com/results?search_query={q}"
+    webbrowser.open(url)
 
-    # ---------- FUNCTIONS ----------
-    def password_check():
-        p = simpledialog.askstring("Password", "Enter Password")
-        if not p:
-            return
-        if len(p) >= 8:
-            log("[+] Password Strong")
-        else:
-            log("[-] Password Weak")
+search_entry = tk.Entry(header, width=40, font=("Arial", 12))
+search_entry.pack(side="left", padx=10)
 
-    def hash_text():
-        t = simpledialog.askstring("Hash", "Enter Text")
-        if not t:
-            return
-        h = hashlib.sha256(t.encode()).hexdigest()
-        log("[HASH] " + h)
+tk.Button(
+    header,
+    text="Search",
+    command=search_video,
+    bg="white"
+).pack(side="left")
 
-    def system_info():
-        log("OS : " + platform.system())
-        log("Machine : " + platform.machine())
-        log("Processor : " + platform.processor())
+# ================= BODY =================
+body = tk.Frame(app, bg="#f5f5f5")
+body.pack(fill="both", expand=True)
 
-    def fake_hack():
-        log("[*] Connecting...")
-        app.update()
-        time.sleep(0.5)
-        log("[*] Bypassing firewall...")
-        app.update()
-        time.sleep(0.5)
-        log("[✓] Simulation Complete (Learning Mode)")
+output = tk.Text(body, height=15)
+output.pack(padx=10, pady=10, fill="both", expand=True)
 
-    def clear():
-        output.delete("1.0", tk.END)
+def log(msg):
+    output.insert(tk.END, msg + "\n")
+    output.see(tk.END)
 
-    # ---------- BUTTONS ----------
-    frame = tk.Frame(app, bg="black")
-    frame.pack()
+# ================= FUNCTIONS =================
+def open_youtube():
+    webbrowser.open("https://www.youtube.com")
+    log("Opened YouTube Homepage")
 
-    def btn(text, cmd, r, c):
-        tk.Button(frame, text=text, command=cmd,
-                  bg="black", fg="lime",
-                  width=25).grid(row=r, column=c, padx=5, pady=5)
+def play_video_url():
+    url = simpledialog.askstring("Play Video", "Enter YouTube Video URL")
+    if url:
+        webbrowser.open(url)
+        log("Playing video from URL")
 
-    btn("Password Check", password_check, 0, 0)
-    btn("Hash Generator", hash_text, 0, 1)
-    btn("System Info", system_info, 1, 0)
-    btn("Hack Simulation", fake_hack, 1, 1)
-    btn("Clear Screen", clear, 2, 0)
+def play_local_video():
+    file = filedialog.askopenfilename(
+        filetypes=[("Video Files", "*.mp4 *.mkv *.avi")]
+    )
+    if file:
+        os.startfile(file)
+        log("Playing local video")
 
-    app.mainloop()
+# ================= BUTTONS =================
+btn_frame = tk.Frame(app, bg="#f5f5f5")
+btn_frame.pack(pady=10)
 
-# ================= START =================
-login_screen()
+tk.Button(btn_frame, text="Open YouTube", width=20, command=open_youtube).grid(row=0, column=0, padx=5)
+tk.Button(btn_frame, text="Play Video URL", width=20, command=play_video_url).grid(row=0, column=1, padx=5)
+tk.Button(btn_frame, text="Play Local Video", width=20, command=play_local_video).grid(row=0, column=2, padx=5)
+
+app.mainloop()
