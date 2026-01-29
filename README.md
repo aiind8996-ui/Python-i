@@ -1,80 +1,154 @@
-import tkinter as tk
-from tkinter import filedialog, simpledialog
-import webbrowser
-import os
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini YouTube</title>
 
-# ================= MAIN APP =================
-app = tk.Tk()
-app.title("Mini YouTube")
-app.geometry("800x500")
-app.configure(bg="white")
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#f9f9f9;
+}
+header{
+    background:#ff0000;
+    color:white;
+    padding:10px;
+    display:flex;
+    align-items:center;
+}
+header h1{
+    margin:0 15px 0 10px;
+}
+header input{
+    flex:1;
+    padding:8px;
+    font-size:16px;
+}
+header button{
+    padding:8px 15px;
+    margin-left:10px;
+    cursor:pointer;
+}
 
-# ================= HEADER =================
-header = tk.Frame(app, bg="red", height=50)
-header.pack(fill="x")
+.container{
+    display:flex;
+}
+.sidebar{
+    width:200px;
+    background:white;
+    padding:10px;
+    height:calc(100vh - 50px);
+    border-right:1px solid #ddd;
+}
+.sidebar div{
+    padding:10px;
+    cursor:pointer;
+}
+.sidebar div:hover{
+    background:#eee;
+}
 
-tk.Label(
-    header,
-    text="Mini YouTube",
-    bg="red",
-    fg="white",
-    font=("Arial", 16, "bold")
-).pack(side="left", padx=10)
+.main{
+    flex:1;
+    padding:15px;
+}
+.video{
+    width:100%;
+    height:400px;
+    background:black;
+}
+iframe{
+    width:100%;
+    height:100%;
+}
+.videos{
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+    gap:15px;
+    margin-top:20px;
+}
+.card{
+    background:white;
+    cursor:pointer;
+}
+.card img{
+    width:100%;
+}
+.card p{
+    padding:8px;
+    font-size:14px;
+}
+</style>
+</head>
 
-# ================= SEARCH =================
-def search_video():
-    q = search_entry.get()
-    if q.strip() == "":
-        return
-    url = f"https://www.youtube.com/results?search_query={q}"
-    webbrowser.open(url)
+<body>
 
-search_entry = tk.Entry(header, width=40, font=("Arial", 12))
-search_entry.pack(side="left", padx=10)
+<header>
+    <h1>MiniYouTube</h1>
+    <input id="search" placeholder="Search">
+    <button onclick="searchVideo()">Search</button>
+</header>
 
-tk.Button(
-    header,
-    text="Search",
-    command=search_video,
-    bg="white"
-).pack(side="left")
+<div class="container">
+    <div class="sidebar">
+        <div onclick="home()">🏠 Home</div>
+        <div onclick="openYT()">▶️ YouTube</div>
+        <div onclick="alert('Feature coming soon')">📺 Subscriptions</div>
+        <div onclick="alert('Feature coming soon')">📂 Library</div>
+    </div>
 
-# ================= BODY =================
-body = tk.Frame(app, bg="#f5f5f5")
-body.pack(fill="both", expand=True)
+    <div class="main">
+        <div class="video">
+            <iframe id="player"
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            frameborder="0"
+            allowfullscreen></iframe>
+        </div>
 
-output = tk.Text(body, height=15)
-output.pack(padx=10, pady=10, fill="both", expand=True)
+        <div class="videos">
+            <div class="card" onclick="play('dQw4w9WgXcQ')">
+                <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg">
+                <p>Sample Video 1</p>
+            </div>
 
-def log(msg):
-    output.insert(tk.END, msg + "\n")
-    output.see(tk.END)
+            <div class="card" onclick="play('9bZkp7q19f0')">
+                <img src="https://img.youtube.com/vi/9bZkp7q19f0/0.jpg">
+                <p>Sample Video 2</p>
+            </div>
 
-# ================= FUNCTIONS =================
-def open_youtube():
-    webbrowser.open("https://www.youtube.com")
-    log("Opened YouTube Homepage")
+            <div class="card" onclick="play('3tmd-ClpJxA')">
+                <img src="https://img.youtube.com/vi/3tmd-ClpJxA/0.jpg">
+                <p>Sample Video 3</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-def play_video_url():
-    url = simpledialog.askstring("Play Video", "Enter YouTube Video URL")
-    if url:
-        webbrowser.open(url)
-        log("Playing video from URL")
+<script>
+function play(id){
+    document.getElementById("player").src =
+    "https://www.youtube.com/embed/" + id;
+}
 
-def play_local_video():
-    file = filedialog.askopenfilename(
-        filetypes=[("Video Files", "*.mp4 *.mkv *.avi")]
-    )
-    if file:
-        os.startfile(file)
-        log("Playing local video")
+function searchVideo(){
+    let q = document.getElementById("search").value;
+    if(q.trim() !== ""){
+        window.open(
+          "https://www.youtube.com/results?search_query=" + q
+        );
+    }
+}
 
-# ================= BUTTONS =================
-btn_frame = tk.Frame(app, bg="#f5f5f5")
-btn_frame.pack(pady=10)
+function openYT(){
+    window.open("https://www.youtube.com");
+}
 
-tk.Button(btn_frame, text="Open YouTube", width=20, command=open_youtube).grid(row=0, column=0, padx=5)
-tk.Button(btn_frame, text="Play Video URL", width=20, command=play_video_url).grid(row=0, column=1, padx=5)
-tk.Button(btn_frame, text="Play Local Video", width=20, command=play_local_video).grid(row=0, column=2, padx=5)
+function home(){
+    location.reload();
+}
+</script>
 
-app.mainloop()
+</body>
+</html>
